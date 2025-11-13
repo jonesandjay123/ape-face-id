@@ -51,6 +51,9 @@
    - Clustering job (cron or manual) using DBSCAN (metric=cosine, eps tuned) + heuristics (min_samples, min captures per day).
 6. **Observability**
    - Store tensorboard logs, confusion matrices, ROC plots (`reports/`).
+7. **Probabilistic Embedding Upgrade (Future)**
+   - Evaluate GroVE (Probabilistic VLM Embeddings) to predict per-sample mean/covariance, enabling KL-divergence scoring and uncertainty-aware enrollment.
+   - Keep GroVE head modular so existing ResNet/ViT weights remain usable; enable toggling deterministic vs probabilistic pipelines at inference.
 
 ## File Structure (Repo Root)
 ```
@@ -166,4 +169,4 @@
 - **Enrollment UI** – Build lightweight web dashboard (FastAPI + React or Gradio) for reviewing unknown clusters, approving IDs, and updating metadata.
 - **Active Learning Loop** – Surface low-confidence predictions for human labeling, automatically queue re-training jobs.
 - **Edge Deployment** – Optimize inference with TensorRT or ONNX Runtime for on-site cameras once POC stabilizes.
-
+- **Probabilistic Embeddings (GroVE)** – Integrate cvjena/GroVE probabilistic VLM head to attach mean/covariance predictions onto existing embeddings, unlocking uncertainty-aware open-set thresholds and enrollment gating.

@@ -48,8 +48,18 @@
    ```
    - Requires existing gallery index; raises if missing.
 
+## GroVE Integration Outlook
+- **What it is**: cvjena/GroVE converts deterministic vision-language embeddings into probabilistic embeddings (mean + covariance), providing uncertainty estimates for each sample.
+- **Why it matters**: uncertainty-aware distances (e.g., KL divergence) dramatically improve open-set rejection and prevent low-quality crops from spawning new IDs during enrollment.
+- **When to use**:
+  1. *Phase 1–2*: optional; baseline can stay deterministic.
+  2. *Phase 3*: highly valuable—filter unknown pools by uncertainty before clustering.
+  3. *Future wildlife deployments*: near-essential for noisy side-profile footage.
+- **Integration plan**: keep the existing ResNet/ViT backbone, add a GroVE head to output μ/Σ, and bolt on KL-divergence scoring + uncertainty gating without discarding current weights.
+
 ## Recommended Next Steps
 1. Flesh out `train_closed_set` forward/backward pass, metric logging, and checkpointing.
 2. Add an embedding export script to populate `artifacts/gallery_index.pkl`.
 3. Extend evaluation to compute Top-1/Top-5 accuracy and confusion matrices.
 4. Once closed-set baseline stabilizes, start Phase 2 work (open-set threshold calibration, unknown buffering).
+5. Prototype GroVE probabilistic head as a drop-in module to compare deterministic vs probabilistic open-set metrics.
