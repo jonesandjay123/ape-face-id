@@ -23,45 +23,177 @@
 - Config loader now produces a `TrainingConfig` dataclass for reuse across training/inference scripts.
 
 ## Getting Started
-1. **Environment Setup**
-   - **Python Version**: Python 3.11 (recommended) or 3.10+
-   - **Create Virtual Environment** (strongly recommended):
-     ```bash
-     # Create venv
-     python -m venv venv
-     
-     # Activate venv
-     # Windows PowerShell:
-     .\venv\Scripts\Activate.ps1
-     # Windows CMD:
-     .\venv\Scripts\activate.bat
-     # macOS / Linux:
-     source venv/bin/activate
-     ```
-   - **Install PyTorch**:
-     - **Windows with NVIDIA GPU (e.g., RTX 5080)**:
-       ```bash
-       # Install PyTorch with CUDA 12.x support
-       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-       ```
-     - **macOS (Apple Silicon M1/M2/M3+)**:
-       ```bash
-       # Install PyTorch with MPS (Metal Performance Shaders) support
-       pip install torch torchvision torchaudio
-       ```
-     - **macOS (Intel) or CPU-only**:
-       ```bash
-       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-       ```
-   - **Install Other Dependencies**:
-     ```bash
-     pip install -r requirements.txt
-     ```
-   - **Verify GPU/Acceleration Availability**:
-     ```bash
-     # Check CUDA (Windows/Linux) or MPS (macOS Apple Silicon)
-     python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'MPS available: {torch.backends.mps.is_available()}'); print(f'Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"MPS\" if torch.backends.mps.is_available() else \"CPU\"}')"
-     ```
+
+### Platform-Specific Setup
+
+<details>
+<summary><b>🐧 Windows with WSL2 + Ubuntu (Recommended for NVIDIA GPU Training)</b></summary>
+
+If you're on Windows with an NVIDIA GPU (e.g., RTX 5080), using **WSL2 with Ubuntu** provides the best PyTorch + CUDA performance and compatibility.
+
+#### Prerequisites
+1. **Install WSL2** (if not already installed):
+   ```powershell
+   # In PowerShell (Administrator)
+   wsl --install
+   # Restart your computer after installation
+   ```
+
+2. **Verify NVIDIA Driver** (in Windows PowerShell):
+   ```powershell
+   nvidia-smi
+   ```
+   You should see your GPU listed (e.g., RTX 5080).
+
+3. **Verify GPU Access in WSL2** (in Ubuntu terminal):
+   ```bash
+   nvidia-smi
+   ```
+   If you see the same GPU table, WSL2 can access your GPU ✅
+
+#### Environment Setup in WSL2 Ubuntu
+
+1. **Navigate to Project Directory**:
+   ```bash
+   # If your repo is at C:\Users\jones\Downloads\ape-face-id
+   cd /mnt/c/Users/jones/Downloads/ape-face-id
+   ```
+
+2. **Install Python and venv** (if needed):
+   ```bash
+   sudo apt update
+   sudo apt install -y python3 python3-venv python3-pip
+   python3 --version  # Should be 3.10+
+   ```
+
+3. **Create Virtual Environment**:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+   You should see `(.venv)` prefix in your prompt.
+
+4. **Upgrade pip**:
+   ```bash
+   pip install --upgrade pip
+   ```
+
+5. **Install PyTorch with CUDA Support**:
+   ```bash
+   # For CUDA 12.1 (check https://pytorch.org/get-started/locally/ for latest)
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   ```
+
+6. **Install Project Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+7. **Verify GPU Detection**:
+   ```bash
+   python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"N/A\"}')"
+   ```
+   Expected output:
+   ```
+   PyTorch: 2.x.x
+   CUDA available: True
+   GPU: NVIDIA GeForce RTX 5080
+   ```
+
+#### Daily Workflow
+```bash
+# 1. Open WSL2 Ubuntu terminal (in Cursor or Windows Terminal)
+# 2. Navigate to project
+cd /mnt/c/Users/jones/Downloads/ape-face-id
+
+# 3. Activate venv
+source .venv/bin/activate
+
+# 4. Run training
+python -m src.training.train --config configs/train_closed_set.yaml
+```
+
+</details>
+
+<details>
+<summary><b>🪟 Windows (Native, without WSL)</b></summary>
+
+1. **Python Version**: Python 3.11 (recommended) or 3.10+
+
+2. **Create Virtual Environment**:
+   ```powershell
+   # In PowerShell or CMD
+   python -m venv venv
+   
+   # Activate (PowerShell)
+   .\venv\Scripts\Activate.ps1
+   # Or CMD
+   .\venv\Scripts\activate.bat
+   ```
+
+3. **Install PyTorch with CUDA**:
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   ```
+
+4. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Verify GPU**:
+   ```bash
+   python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+   ```
+
+</details>
+
+<details>
+<summary><b>🍎 macOS (Apple Silicon)</b></summary>
+
+1. **Create Virtual Environment**:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+2. **Install PyTorch with MPS Support**:
+   ```bash
+   pip install torch torchvision torchaudio
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Verify MPS**:
+   ```bash
+   python -c "import torch; print(f'MPS available: {torch.backends.mps.is_available()}')"
+   ```
+
+</details>
+
+<details>
+<summary><b>🍎 macOS (Intel) or Linux CPU-only</b></summary>
+
+1. **Create Virtual Environment**:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+2. **Install PyTorch (CPU)**:
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+</details>
 2. **Datasets**
    - Download gorilla face crops (e.g., Kaggle `smiles28/gorillas`).
    - Arrange into `data/processed/gorilla_faces/{train,val,test}/{gorilla_id}/image.jpg`.
