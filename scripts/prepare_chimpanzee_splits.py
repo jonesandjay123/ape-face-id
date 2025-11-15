@@ -12,7 +12,9 @@ from typing import Dict, List, Tuple
 
 DEFAULT_ANNOTATION = Path("data/chimpanzee_faces/annotations/annotations_merged_min10.txt")
 DEFAULT_OUTPUT = Path("data/chimpanzee_faces/annotations/splits_min10.json")
-RAW_PREFIX = Path("data/chimpanzee_faces/raw/datasets_cropped_chimpanzee_faces")
+# Base directory that contains the datasets_cropped_chimpanzee_faces folder.
+# Annotation paths already include the "datasets_cropped_chimpanzee_faces/..." prefix.
+RAW_PREFIX = Path("data/chimpanzee_faces/raw")
 
 
 def parse_annotation(annotation_path: Path) -> Dict[str, List[str]]:
