@@ -12,8 +12,10 @@
 - `src/models/` – ResNet18 embedding backbone scaffold.
 - `src/training/` – Closed-set training loop skeleton (`train.py`) and evaluation placeholder.
 - `src/inference/` – k-NN gallery helper plus `predict.py` CLI scaffold.
-- `data/` – (gitignored) location for raw/processed datasets, gallery embeddings, and unknown pools.
+- `data/` – (gitignored raw/processed, but annotations tracked) location for datasets, embeddings, and unknown pools.
 - `configs/` – Run configurations; currently only `train_closed_set.yaml`.
+- `validate_dataset.py` – Dataset structure and integrity validation script.
+- `DATASET_AUDIT_REPORT.md` – Comprehensive dataset validation report with statistics and recommendations.
 
 ## Current Status (Phase 1 Skeleton)
 - ResNet18 embedding wrapper implemented with L2-normalized outputs; classifier head defined inside training loop.
@@ -194,12 +196,99 @@ python -m src.training.train --config configs/train_closed_set.yaml
    ```
 
 </details>
-2. **Datasets**
-   - Download animal face crop datasets.
-   - Arrange into `data/processed/animal_faces/{train,val,test}/{individual_id}/image.jpg`.
-   - Update `data.num_classes` in `configs/train_closed_set.yaml` to match the individual count.
-3. **Configuration**
-   - Copy `configs/train_closed_set.yaml` and adjust paths, batch sizes, embedding dimensions, etc., as needed.
+
+---
+
+## 📦 Dataset Setup
+
+### Dataset Source
+
+This project uses the **Chimpanzee Faces Dataset** from:
+👉 **https://github.com/cvjena/chimpanzee_faces**
+
+The dataset contains cropped face images of individual chimpanzees collected from two field sites:
+
+- **data_CTai** — Taï National Park, Ivory Coast (5,078 images)
+- **data_CZoo** — Leipzig Zoo, Germany (2,109 images)
+
+Each individual has a unique ID label, with metadata including annotations, identity mapping, age group, gender, and keypoint information.
+
+> **Note:** This repository does not bundle the full dataset due to size and licensing considerations.
+> Please follow the steps below to prepare the dataset locally.
+
+### 📁 Required Folder Structure
+
+After downloading the dataset from the [chimpanzee_faces repository](https://github.com/cvjena/chimpanzee_faces), organize it as follows:
+
+```
+animal-face-id/
+├── data/
+│   ├── chimpanzee_faces/
+│   │   ├── raw/
+│   │   │   └── datasets_cropped_chimpanzee_faces/
+│   │   │       ├── data_CTai/
+│   │   │       │   └── face_images/          # 5,078 PNG images
+│   │   │       └── data_CZoo/
+│   │   │           └── face_images/          # 2,109 PNG images
+│   │   ├── annotations/
+│   │   │   ├── annotations_merged_all.txt    # All 102 individuals (7,187 images)
+│   │   │   ├── annotations_merged_min10.txt  # 87 individuals with ≥10 images (7,150 images)
+│   │   │   └── kept_ids_min10.txt            # List of valid IDs for training
+│   │   └── processed/
+│   │       └── (empty - ready for train/val/test splits)
+```
+
+**Key annotation files:**
+- `annotations_merged_all.txt` — Complete dataset with all individuals (102 IDs, 7,187 images)
+- `annotations_merged_min10.txt` — Filtered dataset with individuals having ≥10 images (87 IDs, 7,150 images) — **recommended for training**
+- `kept_ids_min10.txt` — List of 87 individual IDs meeting the 10-image threshold
+
+### 🔍 Dataset Validation
+
+Before training, validate that your dataset is properly organized:
+
+```bash
+python validate_dataset.py
+```
+
+**This script checks:**
+- ✅ All annotation paths reference existing images
+- ✅ Folder structure matches the expected layout
+- ✅ All individuals in min10 subset have ≥10 images
+- ✅ ID consistency between annotation files and kept_ids list
+- ✅ No missing or corrupted files
+
+**Expected output:**
+```
+✓✓✓ Dataset structure verified — ready for model training.
+```
+
+If validation passes, you're ready to proceed. Detailed validation results are saved to:
+- `validation_results.json` — Machine-readable validation metrics
+- `DATASET_AUDIT_REPORT.md` — Comprehensive human-readable audit report
+
+### 📊 Dataset Statistics
+
+| Dataset | Images | Individuals | CTai | CZoo |
+|---------|--------|-------------|------|------|
+| **All** | 7,187 | 102 | 5,078 (70.6%) | 2,109 (29.4%) |
+| **Min10** ⭐ | 7,150 | 87 | 5,041 (70.5%) | 2,109 (29.5%) |
+
+**Recommendation:** Use `annotations_merged_min10.txt` for training to ensure each class has sufficient samples (≥10 images per individual).
+
+### 📖 Dataset License
+
+Please refer to the original dataset's license:
+👉 **https://github.com/cvjena/chimpanzee_faces**
+
+All training in this project is based on that dataset. We do not redistribute the original images in this repository.
+
+---
+
+## Configuration
+
+- Copy `configs/train_closed_set.yaml` and adjust paths, batch sizes, embedding dimensions, etc., as needed.
+- Update `data.num_classes` to `87` when using the `annotations_merged_min10.txt` dataset (recommended).
 
 ## Usage
 1. **Training Skeleton**
