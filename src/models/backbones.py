@@ -12,9 +12,16 @@ from torchvision import models
 class ResNetEmbedding(nn.Module):
     """Thin wrapper that exposes a ResNet backbone with a projection head."""
 
-    def __init__(self, embedding_dim: int, pretrained: bool = True) -> None:
+    def __init__(self, variant: str, embedding_dim: int, pretrained: bool = True) -> None:
         super().__init__()
-        resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT if pretrained else None)
+        if variant == "resnet18":
+            resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT if pretrained else None)
+        elif variant == "resnet50":
+            resnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT if pretrained else None)
+        else:
+            msg = f"Unsupported ResNet variant '{variant}'."
+            raise ValueError(msg)
+
         self.feature_extractor = nn.Sequential(*list(resnet.children())[:-1])
         in_features = resnet.fc.in_features
         self.projection = nn.Linear(in_features, embedding_dim)
@@ -29,7 +36,8 @@ class ResNetEmbedding(nn.Module):
 
 def build_backbone(model_name: str, embedding_dim: int, pretrained: bool = True) -> Any:
     """Return a backbone model configured for the requested embedding size."""
-    if model_name.lower() != "resnet18":
-        msg = f"Unsupported backbone '{model_name}'. Only 'resnet18' is scaffolded."
-        raise ValueError(msg)
-    return ResNetEmbedding(embedding_dim=embedding_dim, pretrained=pretrained)
+    name = model_name.lower()
+    if name in {"resnet18", "resnet50"}:
+        return ResNetEmbedding(variant=name, embedding_dim=embedding_dim, pretrained=pretrained)
+    msg = f"Unsupported backbone '{model_name}'. Supported: resnet18, resnet50."
+    raise ValueError(msg)
