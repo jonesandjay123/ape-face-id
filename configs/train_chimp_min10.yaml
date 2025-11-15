@@ -2,7 +2,7 @@ name: chimp-min10-resnet18
 
 data:
   dataset_name: chimpanzee_faces
-  raw_root: data/chimpanzee_faces/raw/datasets_cropped_chimpanzee_faces
+  raw_root: data/chimpanzee_faces/raw
   splits_path: data/chimpanzee_faces/annotations/splits_min10.json
   batch_size: 64
   num_workers: 4
